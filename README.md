@@ -6,10 +6,10 @@
 <img align="right" src="plot/HKUST.jpg" width="12%">
 
 This is the PyTorch implementation of the paper:
-**Transferable Multi-Domain State Generator for Task-Oriented Dialogue Systems**. [**Chien-Sheng Wu**](https://jasonwu0731.github.io/), Andrea Madotto, Ehsan Hosseini-Asl, Caiming Xiong, Richard Socher and Pascale Fung ***ACL 2019***. 
+**Transferable Multi-Domain State Generator for Task-Oriented Dialogue Systems**. [**Chien-Sheng Wu**](https://jasonwu0731.github.io/), Andrea Madotto, Ehsan Hosseini-Asl, Caiming Xiong, Richard Socher and Pascale Fung. ***ACL 2019***. 
 [[PDF]](https://arxiv.org/abs/1905.08743)
 
-This code has been written using PyTorch >= 1.0. If you use any source codes or datasets included in this toolkit in your work, please cite the following paper. The bibtex are listed below:
+This code has been written using PyTorch >= 1.0. If you use any source codes or datasets included in this toolkit in your work, please cite the following paper. The bibtex is listed below:
 <pre>
 @InProceedings{WuTradeDST2019,
   	author = "Wu, Chien-Sheng and Madotto, Andrea and Hosseini-Asl, Ehsan and Xiong, Caiming and Socher, Richard and Fung, Pascale",
