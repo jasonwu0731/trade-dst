@@ -1,4 +1,4 @@
-## TRADE Dialogue State Tracking
+## TRADE Multi-Domain and Unseen-Domain Dialogue State Tracking
 <img src="plot/pytorch-logo-dark.png" width="10%"> [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
 
 <img align="right" src="plot/einstein-scroll.png" width="8%">
