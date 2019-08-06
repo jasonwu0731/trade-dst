@@ -4,7 +4,7 @@ import json
 import os
 import re
 import shutil
-import urllib
+import urllib.request
 from collections import OrderedDict
 from io import BytesIO
 from zipfile import ZipFile
@@ -26,7 +26,7 @@ DICT_SIZE = 400
 MAX_LENGTH = 50
 IGNORE_KEYS_IN_GOAL = ['eod', 'topic', 'messageLen', 'message']
 
-fin = file('utils/mapping.pair')
+fin = open('utils/mapping.pair','r')
 replacements = []
 for line in fin.readlines():
     tok_from, tok_to = line.replace('\n', '').split('\t')
@@ -146,7 +146,7 @@ def fixDelex(filename, data, data2, idx, idx_acts):
     except:
         return data
 
-    if not isinstance(turn, str) and not isinstance(turn, unicode):
+    if not isinstance(turn, str):# and not isinstance(turn, unicode):
         for k, act in turn.items():
             if 'Attraction' in k:
                 if 'restaurant_' in data['log'][idx]['text']:
@@ -175,7 +175,7 @@ def getDialogueAct(filename, data, data2, idx, idx_acts):
     except:
         return acts
 
-    if not isinstance(turn, str) and not isinstance(turn, unicode):
+    if not isinstance(turn, str): # and not isinstance(turn, unicode):
         for k in turn.keys():
             # temp = [k.split('-')[0].lower(), k.split('-')[1].lower()]
             # for a in turn[k]:
@@ -256,7 +256,7 @@ def analyze_dialogue(dialogue, maxlen):
     # do all the necessary postprocessing
     if len(d['log']) % 2 != 0:
         #print path
-        print 'odd # of turns'
+        print('odd # of turns')
         return None  # odd number of turns, wrong dialogue
     d_pp = {}
     d_pp['goal'] = d['goal']  # for now we just copy the goal
@@ -265,18 +265,18 @@ def analyze_dialogue(dialogue, maxlen):
     # last_bvs = []
     for i in range(len(d['log'])):
         if len(d['log'][i]['text'].split()) > maxlen:
-            print 'too long'
+            # print('too long')
             return None  # too long sentence, wrong dialogue
         if i % 2 == 0:  # usr turn
             text = d['log'][i]['text']
             if not is_ascii(text):
-                print 'not ascii'
+                # print('not ascii')
                 return None
             usr_turns.append(d['log'][i])
         else:  # sys turn
             text = d['log'][i]['text']
             if not is_ascii(text):
-                print 'not ascii'
+                # print('not ascii')
                 return None
             belief_summary, belief_value_summary = get_summary_bstate(d['log'][i]['metadata'])
             d['log'][i]['belief_summary'] = str(belief_summary)
@@ -313,7 +313,7 @@ def loadData():
 
     if not os.path.exists(data_url):
         print("Downloading and unzipping the MultiWOZ dataset")
-        resp = urllib.urlopen(dataset_url)
+        resp = urllib.request.urlopen(dataset_url)
         zip_ref = ZipFile(BytesIO(resp.read()))
         zip_ref.extractall("data/multi-woz")
         zip_ref.close()
@@ -333,7 +333,8 @@ def getDomain(idx, log, domains, last_domain):
         if len(ds_diff.keys()) == 0: # no clues from dialog states
             crnt_doms = last_domain
         else:
-            crnt_doms = ds_diff.keys()
+            crnt_doms = list(ds_diff.keys())
+        # print(crnt_doms)
         return crnt_doms[0] # How about multiple domains in one sentence senario ?
 
 
@@ -358,10 +359,10 @@ def createData():
     # dic = delexicalize.prepareSlotValuesIndependent()
     delex_data = {}
 
-    fin1 = file('data/multi-woz/data.json')
+    fin1 = open('data/multi-woz/data.json', 'r')
     data = json.load(fin1)
 
-    fin2 = file('data/multi-woz/dialogue_acts.json')
+    fin2 = open('data/multi-woz/dialogue_acts.json', 'r')
     data2 = json.load(fin2)
 
     for didx, dialogue_name in enumerate(data):
@@ -421,13 +422,13 @@ def divideData(data):
     """Given test and validation sets, divide
     the data for three different sets"""
     testListFile = []
-    fin = file('data/multi-woz/testListFile.json')
+    fin = open('data/multi-woz/testListFile.json', 'r')
     for line in fin:
         testListFile.append(line[:-1])
     fin.close()
 
     valListFile = []
-    fin = file('data/multi-woz/valListFile.json')
+    fin = open('data/multi-woz/valListFile.json', 'r')
     for line in fin:
         valListFile.append(line[:-1])
     fin.close()
@@ -487,13 +488,13 @@ def divideData(data):
     print("# of dialogues: Train {}, Val {}, Test {}".format(count_train, count_val, count_test))
 
     # save all dialogues
-    with open('data/dev_dials.json', 'wb') as f:
+    with open('data/dev_dials.json', 'w') as f:
         json.dump(val_dials, f, indent=4)
 
-    with open('data/test_dials.json', 'wb') as f:
+    with open('data/test_dials.json', 'w') as f:
         json.dump(test_dials, f, indent=4)
 
-    with open('data/train_dials.json', 'wb') as f:
+    with open('data/train_dials.json', 'w') as f:
         json.dump(train_dials, f, indent=4)
 
     # return word_freqs_usr, word_freqs_sys
