@@ -51,6 +51,11 @@ Check the packages needed or simply run the command
 ```console
 ❱❱❱ pip install -r requirements.txt
 ```
+If you run into an error related to Cython, try to upgrade it first.
+```console
+❱❱❱ pip install --upgrade cython
+```
+
 
 ## Multi-Domain DST
 Training
