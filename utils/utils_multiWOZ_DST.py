@@ -307,7 +307,7 @@ def read_langs(file_name, gating_dict, SLOTS, dataset, lang, mem_lang, sequicity
                     "turn_belief":turn_belief_list,
                     "gating_label":gating_label, 
                     "turn_uttr":turn_uttr_strip, 
-                    'generate_y':generate_y
+                    "generate_y":generate_y
                     }
                 data.append(data_detail)
                 
