@@ -390,7 +390,7 @@ class Generator(nn.Module):
         # Compute pointer-generator output
         words_point_out = []
         counter = 0
-        for slot in slot_temp:
+        for slot in slot_temp: # TODO: Parallel this part to make it train faster
             hidden = encoded_hidden
             words = []
             slot_emb = slot_emb_dict[slot]
