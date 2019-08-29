@@ -164,7 +164,7 @@ def masking(losses, mask):
     if losses.is_cuda:
         mask_ = mask_.cuda()
     losses = losses * mask_.float()
-    loss = losses.sum() / (mask.sum().float())
+    loss = losses.sum() / (mask_.sum().float())
     return loss
 
 

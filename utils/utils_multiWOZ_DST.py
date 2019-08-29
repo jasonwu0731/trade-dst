@@ -33,21 +33,21 @@ class Lang:
       
     def index_words(self, sent, type):
         if type == 'utter':
-            for word in sent.split():
+            for word in sent.split(" "):
                 self.index_word(word)
         elif type == 'slot':
             for slot in sent:
                 d, s = slot.split("-")
                 self.index_word(d)
-                for ss in s.split():
+                for ss in s.split(" "):
                     self.index_word(ss)
         elif type == 'belief':
             for slot, value in sent.items():
                 d, s = slot.split("-")
                 self.index_word(d)
-                for ss in s.split():
+                for ss in s.split(" "):
                     self.index_word(ss)
-                for v in value.split():
+                for v in value.split(" "):
                     self.index_word(v)
 
     def index_word(self, word):
