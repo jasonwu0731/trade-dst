@@ -30,6 +30,7 @@ Over-dependence on domain ontology and lack of knowledge sharing across domains 
 </p>
 The architecture of the proposed TRADE model, which includes (a) an utterance encoder, (b) a state generator, and (c) a slot gate, all of which are shared among domains. The state generator will decode J times independently for all the possible (domain, slot) pairs. At the first decoding step, state generator will take the j-th (domain, slot) embeddings as input to generate its corresponding slot values and slot gate. The slot gate predicts whether the j-th (domain, slot) pair is triggered by the dialogue.
 
+
 ## Data
 
 <p align="center">
@@ -71,6 +72,8 @@ Testing
 * -lr: learning rate
 * -le: loading pretrained embeddings
 * -path: model saved path
+
+> [2019.08 Update] Now the decoder can generate all the (domain, slot) pairs in one batch at the same time to speedup decoding process. If you face any memory error, you can set flag "--parallel_decode=0" to decode each  (domain, slot) pair one-by-one.
 
 
 ## Unseen Domain DST
