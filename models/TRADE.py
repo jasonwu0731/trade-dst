@@ -369,7 +369,7 @@ class Generator(nn.Module):
         
         # Get the slot embedding 
         slot_emb_dict = {}
-        for slot in slot_temp:
+        for i, slot in enumerate(slot_temp):
             # Domain embbeding
             if slot.split("-")[0] in self.slot_w2i.keys():
                 domain_w2idx = [self.slot_w2i[slot.split("-")[0]]]
@@ -384,41 +384,89 @@ class Generator(nn.Module):
                 slot_emb = self.Slot_emb(slot_w2idx)
 
             # Combine two embeddings as one query
-            slot_emb_dict[slot] = domain_emb + slot_emb
+            combined_emb = domain_emb + slot_emb
+            slot_emb_dict[slot] = combined_emb
+            slot_emb_exp = combined_emb.expand_as(encoded_hidden)
+            if i == 0:
+                slot_emb_arr = slot_emb_exp.clone()
+            else:
+                slot_emb_arr = torch.cat((slot_emb_arr, slot_emb_exp), dim=0)
 
-        words_class_out = []
-        # Compute pointer-generator output
-        words_point_out = []
-        counter = 0
-        for slot in slot_temp:
-            hidden = encoded_hidden
-            words = []
-            slot_emb = slot_emb_dict[slot]
-            decoder_input = self.dropout_layer(slot_emb).expand(batch_size, self.hidden_size)
+        if args["parallel_decode"]:
+            # Compute pointer-generator output, puting all (domain, slot) in one batch
+            decoder_input = self.dropout_layer(slot_emb_arr).view(-1, self.hidden_size) # (batch*|slot|) * emb
+            hidden = encoded_hidden.repeat(1, len(slot_temp), 1) # 1 * (batch*|slot|) * emb
+            words_point_out = [[] for i in range(len(slot_temp))]
+            words_class_out = []
+            
             for wi in range(max_res_len):
                 dec_state, hidden = self.gru(decoder_input.expand_as(hidden), hidden)
-                context_vec, logits, prob = self.attend(encoded_outputs, hidden.squeeze(0), encoded_lens)
+
+                enc_out = encoded_outputs.repeat(len(slot_temp), 1, 1)
+                enc_len = encoded_lens * len(slot_temp)
+                context_vec, logits, prob = self.attend(enc_out, hidden.squeeze(0), enc_len)
+
                 if wi == 0: 
-                    all_gate_outputs[counter] = self.W_gate(context_vec)
+                    all_gate_outputs = torch.reshape(self.W_gate(context_vec), all_gate_outputs.size())
+
                 p_vocab = self.attend_vocab(self.embedding.weight, hidden.squeeze(0))
                 p_gen_vec = torch.cat([dec_state.squeeze(0), context_vec, decoder_input], -1)
                 vocab_pointer_switches = self.sigmoid(self.W_ratio(p_gen_vec))
                 p_context_ptr = torch.zeros(p_vocab.size())
                 if USE_CUDA: p_context_ptr = p_context_ptr.cuda()
-                p_context_ptr.scatter_add_(1, story, prob)
+                
+                p_context_ptr.scatter_add_(1, story.repeat(len(slot_temp), 1), prob)
+
                 final_p_vocab = (1 - vocab_pointer_switches).expand_as(p_context_ptr) * p_context_ptr + \
                                 vocab_pointer_switches.expand_as(p_context_ptr) * p_vocab
                 pred_word = torch.argmax(final_p_vocab, dim=1)
-                words.append([self.lang.index2word[w_idx.item()] for w_idx in pred_word])
-                all_point_outputs[counter, :, wi, :] = final_p_vocab
+                words = [self.lang.index2word[w_idx.item()] for w_idx in pred_word]
+                
+                for si in range(len(slot_temp)):
+                    words_point_out[si].append(words[si*batch_size:(si+1)*batch_size])
+                
+                all_point_outputs[:, :, wi, :] = torch.reshape(final_p_vocab, (len(slot_temp), batch_size, self.vocab_size))
+                
                 if use_teacher_forcing:
-                    decoder_input = self.embedding(target_batches[:, counter, wi]) # Chosen word is next input
+                    decoder_input = self.embedding(torch.flatten(target_batches[:, :, wi].transpose(1,0)))
                 else:
                     decoder_input = self.embedding(pred_word)   
+                
                 if USE_CUDA: decoder_input = decoder_input.cuda()
-            counter += 1
-            words_point_out.append(words)
-        return all_point_outputs, all_gate_outputs, words_point_out, words_class_out
+        else:
+            # Compute pointer-generator output, decoding each (domain, slot) one-by-one
+            words_point_out = []
+            counter = 0
+            for slot in slot_temp:
+                hidden = encoded_hidden
+                words = []
+                slot_emb = slot_emb_dict[slot]
+                decoder_input = self.dropout_layer(slot_emb).expand(batch_size, self.hidden_size)
+                for wi in range(max_res_len):
+                    dec_state, hidden = self.gru(decoder_input.expand_as(hidden), hidden)
+                    context_vec, logits, prob = self.attend(encoded_outputs, hidden.squeeze(0), encoded_lens)
+                    if wi == 0: 
+                        all_gate_outputs[counter] = self.W_gate(context_vec)
+                    p_vocab = self.attend_vocab(self.embedding.weight, hidden.squeeze(0))
+                    p_gen_vec = torch.cat([dec_state.squeeze(0), context_vec, decoder_input], -1)
+                    vocab_pointer_switches = self.sigmoid(self.W_ratio(p_gen_vec))
+                    p_context_ptr = torch.zeros(p_vocab.size())
+                    if USE_CUDA: p_context_ptr = p_context_ptr.cuda()
+                    p_context_ptr.scatter_add_(1, story, prob)
+                    final_p_vocab = (1 - vocab_pointer_switches).expand_as(p_context_ptr) * p_context_ptr + \
+                                    vocab_pointer_switches.expand_as(p_context_ptr) * p_vocab
+                    pred_word = torch.argmax(final_p_vocab, dim=1)
+                    words.append([self.lang.index2word[w_idx.item()] for w_idx in pred_word])
+                    all_point_outputs[counter, :, wi, :] = final_p_vocab
+                    if use_teacher_forcing:
+                        decoder_input = self.embedding(target_batches[:, counter, wi]) # Chosen word is next input
+                    else:
+                        decoder_input = self.embedding(pred_word)   
+                    if USE_CUDA: decoder_input = decoder_input.cuda()
+                counter += 1
+                words_point_out.append(words)
+        
+        return all_point_outputs, all_gate_outputs, words_point_out, []
 
     def attend(self, seq, cond, lens):
         """

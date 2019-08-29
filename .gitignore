@@ -1,4 +1,5 @@
 save/
 sftp-config.json
 data/
+*.pyc
 
