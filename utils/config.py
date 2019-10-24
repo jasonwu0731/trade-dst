@@ -43,7 +43,7 @@ parser.add_argument('-eb','--eval_batch', help='Evaluation Batch_size', required
 parser.add_argument('-gate','--use_gate', help='', required=False, default=1, type=int)
 parser.add_argument('-le','--load_embedding', help='', required=False, default=0, type=int)
 parser.add_argument('-femb','--fix_embedding', help='', required=False, default=0, type=int)
-parser.add_argument('-paral','--parallel_decode', help='', required=False, default=1, type=int)
+parser.add_argument('-paral','--parallel_decode', help='', required=False, default=0, type=int)
 
 # Model Hyper-Parameters
 parser.add_argument('-dec','--decoder', help='decoder model', required=False)
