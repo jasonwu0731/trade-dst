@@ -73,7 +73,7 @@ Testing
 * -le: loading pretrained embeddings
 * -path: model saved path
 
-> [2019.08 Update] Now the decoder can generate all the (domain, slot) pairs in one batch at the same time to speedup decoding process. If you face any memory error, you can set flag "--parallel_decode=0" to decode each  (domain, slot) pair one-by-one.
+> [2019.08 Update] Now the decoder can generate all the (domain, slot) pairs in one batch at the same time to speedup decoding process. You can set flag "--parallel_decode=1" to decode all (domain, slot) pairs in one batch.
 
 
 ## Unseen Domain DST
