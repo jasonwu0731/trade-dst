@@ -105,5 +105,8 @@ GEM
 ```
 * -l_ewc: lambda value in EWC training
 
+## Other Notes
+- We found that there might be some variances in different runs, especially for the few-shot setting. For our own experiments, we only use one random seed (seed=10) to do the experiments reported in the paper. Please check the results for average three runs in our [ACL presentation](https://jasonwu0731.github.io/files/TRADE-DST-ACL-2019.pdf). 
+
 ## Bug Report
 Feel free to create an issue or send email to jason.wu@connect.ust.hk
