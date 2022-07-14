@@ -6,6 +6,7 @@ from torch import optim
 import torch.nn.functional as F
 import random
 import numpy as np
+import wandb
 
 # import matplotlib.pyplot as plt
 # import seaborn  as sns
@@ -19,6 +20,16 @@ from utils.measures import wer, moses_multi_bleu
 from utils.masked_cross_entropy import *
 from utils.config import *
 import pprint
+
+config = {'dataset': 'multiwoz-dstc11', 'task': 'dst', 'path': None, 'sample': None, 'patience': 6, 'earlyStop': 'BLEU',
+          'all_vocab': 1, 'imbalance_sampler': 0, 'data_ratio': 100, 'unk_mask': 1, 'batch': 32, 'run_dev_testing': 0,
+          'vizualization': 0, 'genSample': 0, 'evalp': 1, 'addName': '', 'eval_batch': 0, 'use_gate': 1,
+          'load_embedding': 1, 'fix_embedding': 0, 'parallel_decode': 0, 'decoder': 'TRADE', 'hidden': 400,
+          'learn': 0.001, 'drop': 0.2, 'limit': -10000, 'clip': 10, 'teacher_forcing_ratio': 0.5, 'lambda_ewc': 0.01,
+          'fisher_sample': 0, 'all_model': False, 'domain_as_task': False, 'run_except_4d': 1, 'strict_domain': False,
+          'except_domain': '', 'only_domain': ''}
+wandb.init(project="dst", entity="kaist-dstc11-track3", config=config)
+
 
 class TRADE(nn.Module):
     def __init__(self, hidden_size, lang, path, task, lr, dropout, slots, gating_dict, nb_train_vocab=0):
@@ -206,6 +217,7 @@ class TRADE(nn.Module):
         joint_acc_score_ptr, F1_score_ptr, turn_acc_score_ptr = self.evaluate_metrics(all_prediction, "pred_bs_ptr", slot_temp)
 
         evaluation_metrics = {"Joint Acc":joint_acc_score_ptr, "Turn Acc":turn_acc_score_ptr, "Joint F1":F1_score_ptr}
+        wandb.log(evaluation_metrics)
         print(evaluation_metrics)
 
         # Set back to training mode
