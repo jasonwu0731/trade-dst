@@ -2,4 +2,4 @@ save/
 sftp-config.json
 data/
 *.pyc
-
+.idea/

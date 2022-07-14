@@ -248,6 +248,8 @@ def read_langs(file_name, gating_dict, SLOTS, dataset, lang, mem_lang, sequicity
 
             # Reading data
             for ti, turn in enumerate(dial_dict["dialogue"]):
+                if "domain" not in turn:
+                    continue
                 turn_domain = turn["domain"]
                 turn_id = turn["turn_idx"]
                 turn_uttr = turn["system_transcript"] + " ; " + turn["transcript"]
@@ -379,9 +381,9 @@ def get_slot_information(ontology):
 
 def prepare_data_seq(training, task="dst", sequicity=0, batch_size=100):
     eval_batch = args["eval_batch"] if args["eval_batch"] else batch_size
-    file_train = 'data/train_dials.json'
-    file_dev = 'data/dev_dials.json'
-    file_test = 'data/test_dials.json'
+    file_train = 'data/train_multiwoz.json'
+    file_dev = 'data/dev_multiwoz.json'
+    file_test = 'data/dev_multiwoz.json'
     # Create saving folder
     if args['path']:
         folder_name = args['path'].rsplit('/', 2)[0] + '/'
@@ -391,7 +393,7 @@ def prepare_data_seq(training, task="dst", sequicity=0, batch_size=100):
     if not os.path.exists(folder_name): 
         os.makedirs(folder_name)
     # load domain-slot pairs from ontology
-    ontology = json.load(open("data/multi-woz/MULTIWOZ2 2/ontology.json", 'r'))
+    ontology = json.load(open("data/new_ontology.json", 'r'))
     ALL_SLOTS = get_slot_information(ontology)
     gating_dict = {"ptr":0, "dontcare":1, "none":2}
     # Vocabulary

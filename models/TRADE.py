@@ -229,8 +229,7 @@ class TRADE(nn.Module):
     def evaluate_metrics(self, all_prediction, from_which, slot_temp):
         total, turn_acc, joint_acc, F1_pred, F1_count = 0, 0, 0, 0, 0
         for d, v in all_prediction.items():
-            for t in range(len(v)):
-                cv = v[t]
+            for cv in v.values():
                 if set(cv["turn_belief"]) == set(cv[from_which]):
                     joint_acc += 1
                 total += 1
