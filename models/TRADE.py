@@ -21,15 +21,6 @@ from utils.masked_cross_entropy import *
 from utils.config import *
 import pprint
 
-config = {'dataset': 'multiwoz-dstc11', 'task': 'dst', 'path': None, 'sample': None, 'patience': 6, 'earlyStop': 'BLEU',
-          'all_vocab': 1, 'imbalance_sampler': 0, 'data_ratio': 100, 'unk_mask': 1, 'batch': 32, 'run_dev_testing': 0,
-          'vizualization': 0, 'genSample': 0, 'evalp': 1, 'addName': '', 'eval_batch': 0, 'use_gate': 1,
-          'load_embedding': 1, 'fix_embedding': 0, 'parallel_decode': 0, 'decoder': 'TRADE', 'hidden': 400,
-          'learn': 0.001, 'drop': 0.2, 'limit': -10000, 'clip': 10, 'teacher_forcing_ratio': 0.5, 'lambda_ewc': 0.01,
-          'fisher_sample': 0, 'all_model': False, 'domain_as_task': False, 'run_except_4d': 1, 'strict_domain': False,
-          'except_domain': '', 'only_domain': ''}
-wandb.init(project="dst", entity="kaist-dstc11-track3", config=config)
-
 
 class TRADE(nn.Module):
     def __init__(self, hidden_size, lang, path, task, lr, dropout, slots, gating_dict, nb_train_vocab=0):
@@ -49,6 +40,7 @@ class TRADE(nn.Module):
 
         self.encoder = EncoderRNN(self.lang.n_words, hidden_size, self.dropout)
         self.decoder = Generator(self.lang, self.encoder.embedding, self.lang.n_words, hidden_size, self.dropout, self.slots, self.nb_gate) 
+        self.wandb = wandb
         
         if path:
             if USE_CUDA:
@@ -72,6 +64,18 @@ class TRADE(nn.Module):
             self.encoder.cuda()
             self.decoder.cuda()
 
+        if args["wandb"]:
+            config = {'dataset': 'multiwoz-dstc11', 'task': 'dst', 'path': None, 'sample': None, 'patience': 6, 'earlyStop': 'BLEU',
+                    'all_vocab': 1, 'imbalance_sampler': 0, 'data_ratio': 100, 'unk_mask': 1, 'batch': 32, 'run_dev_testing': 0,
+                    'vizualization': 0, 'genSample': 0, 'evalp': 1, 'addName': '', 'eval_batch': 0, 'use_gate': 1,
+                    'load_embedding': 1, 'fix_embedding': 0, 'parallel_decode': 0, 'decoder': 'TRADE', 'hidden': 400,
+                    'learn': 0.001, 'drop': 0.2, 'limit': -10000, 'clip': 10, 'teacher_forcing_ratio': 0.5, 'lambda_ewc': 0.01,
+                    'fisher_sample': 0, 'all_model': False, 'domain_as_task': False, 'run_except_4d': 1, 'strict_domain': False,
+                    'except_domain': '', 'only_domain': ''}
+            
+            wandb.init(project="dst", entity="kaist-dstc11-track3", config=config)
+
+
     def print_loss(self):    
         print_loss_avg = self.loss / self.print_every
         print_loss_ptr = self.loss_ptr / self.print_every
@@ -82,7 +86,7 @@ class TRADE(nn.Module):
         return 'L:{:.2f},LP:{:.2f},LG:{:.2f}'.format(print_loss_avg,print_loss_ptr,print_loss_gate)
     
     def save_model(self, dec_type):
-        directory = 'save/TRADE-'+args["addName"]+args['dataset']+str(self.task)+'/'+'HDD'+str(self.hidden_size)+'BSZ'+str(args['batch'])+'DR'+str(self.dropout)+str(dec_type)                 
+        directory = args["output_folder"] +'/TRADE-'+args["addName"]+args['dataset']+str(self.task)+'/'+'HDD'+str(self.hidden_size)+'BSZ'+str(args['batch'])+'DR'+str(self.dropout)+str(dec_type)                 
         if not os.path.exists(directory):
             os.makedirs(directory)
         torch.save(self.encoder, directory + '/enc.th')
@@ -217,7 +221,8 @@ class TRADE(nn.Module):
         joint_acc_score_ptr, F1_score_ptr, turn_acc_score_ptr = self.evaluate_metrics(all_prediction, "pred_bs_ptr", slot_temp)
 
         evaluation_metrics = {"Joint Acc":joint_acc_score_ptr, "Turn Acc":turn_acc_score_ptr, "Joint F1":F1_score_ptr}
-        wandb.log(evaluation_metrics)
+        if args["wandb"]:
+            wandb.log(evaluation_metrics)
         print(evaluation_metrics)
 
         # Set back to training mode

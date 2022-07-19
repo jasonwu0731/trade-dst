@@ -30,6 +30,7 @@ parser.add_argument('-imbsamp','--imbalance_sampler', help='', required=False, d
 parser.add_argument('-data_ratio','--data_ratio', help='', required=False, default=100, type=int)
 parser.add_argument('-um','--unk_mask', help='mask out input token to UNK', type=int, required=False, default=1)
 parser.add_argument('-bsz','--batch', help='Batch_size', required=False, type=int)
+parser.add_argument('-wandb', '--wandb', help='Use wandb logging', required=False, type=int, default=0)
 
 # Testing Setting
 parser.add_argument('-rundev','--run_dev_testing', help='', required=False, default=0, type=int)
@@ -38,6 +39,8 @@ parser.add_argument('-gs','--genSample', help='Generate Sample', type=int, requi
 parser.add_argument('-evalp','--evalp', help='evaluation period', required=False, default=1)
 parser.add_argument('-an','--addName', help='An add name for the save folder', required=False, default='')
 parser.add_argument('-eb','--eval_batch', help='Evaluation Batch_size', required=False, type=int, default=0)
+
+parser.add_argument('-output_folder', '--output_folder', help='Output folder name', required=False, default='save')
 
 # Model architecture
 parser.add_argument('-gate','--use_gate', help='', required=False, default=1, type=int)

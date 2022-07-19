@@ -381,19 +381,19 @@ def get_slot_information(ontology):
 
 def prepare_data_seq(training, task="dst", sequicity=0, batch_size=100):
     eval_batch = args["eval_batch"] if args["eval_batch"] else batch_size
-    file_train = 'data/train_multiwoz.json'
-    file_dev = 'data/dev_multiwoz.json'
-    file_test = 'data/dev_multiwoz.json'
+    file_train = 'data/multiwoz/dstc11_train_dials.json'
+    file_dev = 'data/multiwoz/dstc11_dev_dials.json'
+    file_test = 'data/multiwoz/dstc11_dev_dials.json'
     # Create saving folder
     if args['path']:
         folder_name = args['path'].rsplit('/', 2)[0] + '/'
     else:
-        folder_name = 'save/{}-'.format(args["decoder"])+args["addName"]+args['dataset']+str(args['task'])+'/'
+        folder_name = '{}/{}-'.format(args["output_folder"], args["decoder"])+args["addName"]+args['dataset']+str(args['task'])+'/'
     print("folder_name", folder_name)
     if not os.path.exists(folder_name): 
         os.makedirs(folder_name)
     # load domain-slot pairs from ontology
-    ontology = json.load(open("data/new_ontology.json", 'r'))
+    ontology = json.load(open("data/multiwoz/dstc11_ontology.json", 'r'))
     ALL_SLOTS = get_slot_information(ontology)
     gating_dict = {"ptr":0, "dontcare":1, "none":2}
     # Vocabulary
