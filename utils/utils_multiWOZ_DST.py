@@ -423,7 +423,7 @@ def prepare_data_seq(training, task="dst", sequicity=0, batch_size=100):
                 pickle.dump(lang, handle)
             with open(folder_name+mem_lang_name, 'wb') as handle: 
                 pickle.dump(mem_lang, handle)
-        emb_dump_path = 'data/emb{}.json'.format(len(lang.index2word))
+        emb_dump_path = '{}/emb{}.json'.format(args["output_folder"], len(lang.index2word))
         if not os.path.exists(emb_dump_path) and args["load_embedding"]:
             dump_pretrained_emb(lang.word2index, lang.index2word, emb_dump_path)
     else:

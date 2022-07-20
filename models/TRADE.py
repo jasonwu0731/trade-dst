@@ -317,7 +317,7 @@ class EncoderRNN(nn.Module):
         # self.domain_W = nn.Linear(hidden_size, nb_domain)
 
         if args["load_embedding"]:
-            with open(os.path.join("data/", 'emb{}.json'.format(vocab_size))) as f:
+            with open(os.path.join(args["output_folder"], 'emb{}.json'.format(vocab_size))) as f:
                 E = json.load(f)
             new = self.embedding.weight.data.new
             self.embedding.weight.data.copy_(new(E))
